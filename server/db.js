@@ -1,22 +1,8 @@
-// server/db.js — initializes SQLite DB and exposes helper functions
-const Database = require('better-sqlite3');
-const fs = require('fs');
-const path = require('path');
-const dataDir = path.join(__dirname, 'data');
-if(!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, {recursive:true});
-const dbPath = path.join(dataDir, 'database.sqlite');
-const db = new Database(dbPath);
+// server/db.js — Postgres connection (DATABASE_URL from env)
+const { Pool } = require('pg');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
 
-// create orders table
-db.prepare(`CREATE TABLE IF NOT EXISTS orders (
-  id TEXT PRIMARY KEY,
-  name TEXT,
-  email TEXT,
-  style TEXT,
-  quantity INTEGER,
-  total INTEGER,
-  status TEXT,
-  created_at TEXT
-)`).run();
-
-module.exports = db;
+module.exports = pool;
