@@ -1,11 +1,10 @@
-// server/server.js — Express with Postgres
+// server/server.js — Express with Postgres (simplified)
 require('dotenv').config();
 const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const pool = require('./db');
-const migrate = require('./migrations/migrate');
 
 const app = express();
 app.use(cors());
@@ -13,11 +12,6 @@ app.use(express.json());
 
 const FLW_SECRET = process.env.FLW_SECRET_KEY;
 if (!FLW_SECRET) console.warn('⚠ FLW_SECRET_KEY not set in environment');
-
-// Run migrations on startup
-(async () => {
-  await migrate();
-})();
 
 // POST /create-order
 app.post('/create-order', async (req, res) => {
@@ -57,7 +51,6 @@ app.post('/verify-payment', async (req, res) => {
     const j = await response.json();
 
     if (j && j.status === 'success' && j.data && j.data.status === 'successful') {
-      // Update order status to paid if order_id provided
       if (order_id) {
         await pool.query('UPDATE orders SET status = $1 WHERE id = $2', ['paid', order_id]);
       }
@@ -69,14 +62,13 @@ app.post('/verify-payment', async (req, res) => {
   }
 });
 
-// POST /webhook (optional Flutterwave webhook)
+// POST /webhook
 app.post('/webhook', (req, res) => {
   console.log('Webhook received:', req.body);
-  // TODO: verify signature and update DB
   res.json({ received: true });
 });
 
-// GET /orders (admin list)
+// GET /orders
 app.get('/orders', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
