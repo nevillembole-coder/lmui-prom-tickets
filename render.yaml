@@ -1,12 +1,9 @@
-# Render.yaml deployment config
-# Deploy to Render with: https://render.com/deploy?repo=...
-
 services:
   - type: web
     name: lmui-prom-tickets-server
     env: node
     branch: main
-    buildCommand: "cd server && npm install && npm run migrate"
+    buildCommand: "cd server && npm install"
     startCommand: "cd server && npm start"
     envVars:
       - key: FLW_SECRET_KEY
@@ -19,4 +16,4 @@ services:
 databases:
   - name: lmui-prom-db
     plan: free
-    region: oregon  # change if needed
+    region: oregon
